@@ -16,9 +16,12 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = process.env.NODE_ENV === 'production' 
-            ? ["https://tst.com.sa"]
-            : ["http://localhost:3000", "http://127.0.0.1:5502"]; // Development environments
+        const allowedOrigins = [
+            "http://localhost:3000", 
+            "http://127.0.0.1:5502", 
+            "https://tst.com.sa"  // Add other allowed origins here
+        ];
+        
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -28,6 +31,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
+
 
 app.use(express.json());
 

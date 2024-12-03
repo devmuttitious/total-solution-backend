@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 // Function to send a thank you email
 const sendThankYouEmail = async (email) => {
     const mailOptions = {
-        from: "info@tst.com.sa", // Sender address
+        from: process.env.EMAIL_USER, // Sender address
         to: email, // Receiver address
         subject: "Thank You for Subscribing to Our Newsletter!",
         html: `
@@ -77,7 +77,7 @@ const sendThankYouEmail = async (email) => {
 // Function to send a contact form email
 const sendContactEmail = async ({ name, email, message }) => {
     const mailOptions = {
-        from: process.env.EMAIL_USER, // Sender address
+        from: email, // Sender address
         to: process.env.EMAIL_USER, // Your email address to receive the contact form submissions
         subject: `New Contact ${name}`,
         html: `

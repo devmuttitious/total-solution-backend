@@ -49,9 +49,21 @@ app.get('/social/snapchat', (req, res) => {
 const staticDir = path.join(__dirname, ".."); // Go one level up to the project root
 app.use(express.static(staticDir)); // Serve static files
 
+// API Routes
+app.use("/api", subscriberRoutes);
+app.use("/api", mediaRoutes);
+app.use("/api", contactRoutes);
+app.use("/api/career", careerRoutes);
+
 // Custom route to serve HTML files without extension
 app.get("/*", (req, res) => {
   const requestedPath = req.params[0]; // Get the entire path after the root `/`
+
+  // Exclude API routes from being handled by this route
+  if (requestedPath.startsWith("api/")) {
+    return; // Let the API route handlers process the request
+  }
+
   let filePath;
 
   // Check for a matching file in the root, projects, or car-trade folder
@@ -74,12 +86,6 @@ app.get("/*", (req, res) => {
 
 // Serving uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// API Routes
-app.use("/api", subscriberRoutes);
-app.use("/api", mediaRoutes);
-app.use("/api", contactRoutes);
-app.use("/api/career", careerRoutes);
 
 // Root route to show API status
 app.get("/", (req, res) => {

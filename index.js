@@ -15,7 +15,17 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : "http://localhost:3000", // Allow frontend domain in production, localhost for development
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "http://localhost:3000", // Development
+      process.env.FRONTEND_URL, // Production URL from environment
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow request
+    } else {
+      callback(new Error("Not allowed by CORS")); // Reject request
+    }
+  },
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
@@ -46,14 +56,39 @@ app.get('/social/snapchat', (req, res) => {
 });
 
 // Static file serving
-const staticDir = path.join(__dirname, ".."); // Go one level up to the project root
-app.use(express.static(staticDir)); // Serve static files
+const staticDir = path.join(__dirname, "..");
+app.use(express.static(staticDir));
 
 // API Routes
 app.use("/api", subscriberRoutes);
 app.use("/api", mediaRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/career", careerRoutes);
+
+// Custom route to serve HTML files without extension
+app.get("/*", (req, res) => {
+  const requestedPath = req.params[0];
+
+  if (requestedPath.startsWith("api/")) {
+    return; // Let API route handlers process the request
+  }
+
+  let filePath;
+  if (requestedPath.includes("projects")) {
+    filePath = path.join(staticDir, requestedPath + ".html");
+  } else if (requestedPath.includes("car-trade")) {
+    filePath = path.join(staticDir, requestedPath + ".html");
+  } else {
+    filePath = path.join(staticDir, requestedPath + ".html");
+  }
+
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error(`Error serving ${filePath}:`, err.message);
+      res.status(404).send("Page not found");
+    }
+  });
+});
 
 // Serving uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -63,13 +98,9 @@ app.get("/", (req, res) => {
   res.send("Your API is working");
 });
 
-// Start the Server based on environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-  });
-} else {
-  app.listen(PORT, () => {
-    console.log(`Server is running at https://tst.com.sa`);
-  });
-}
+// Start the Server
+app.listen(PORT, () => {
+  const env = process.env.NODE_ENV || "development";
+  const host = env === "production" ? process.env.FRONTEND_URL : `http://localhost:${PORT}`;
+  console.log(`Server is running at ${host}`);
+});

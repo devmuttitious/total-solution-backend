@@ -89,7 +89,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Root route to show API status
 app.get("/", (req, res) => {
-  res.send("Your API is working");
+  res.send("Your API is working"); 
 });
 
 // Start the Server based on environment

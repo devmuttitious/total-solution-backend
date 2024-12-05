@@ -55,41 +55,12 @@ app.use("/api", mediaRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/career", careerRoutes);
 
-// Custom route to serve HTML files without extension
-app.get("/*", (req, res) => {
-  const requestedPath = req.params[0]; // Get the entire path after the root `/`
-
-  // Exclude API routes from being handled by this route
-  if (requestedPath.startsWith("api/")) {
-    return; // Let the API route handlers process the request
-  }
-
-  let filePath;
-
-  // Check for a matching file in the root, projects, or car-trade folder
-  if (requestedPath.includes("projects")) {
-    filePath = path.join(staticDir, requestedPath + ".html"); // Serve from 'projects'
-  } else if (requestedPath.includes("car-trade")) {
-    filePath = path.join(staticDir, requestedPath + ".html"); // Serve from 'car-trade'
-  } else {
-    filePath = path.join(staticDir, requestedPath + ".html"); // Default to root directory
-  }
-
-  // Serve the file if it exists
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error(`Error serving ${filePath}:`, err.message);
-      res.status(404).send("Page not found");
-    }
-  });
-});
-
 // Serving uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Root route to show API status
 app.get("/", (req, res) => {
-  res.send("Your API is working"); 
+  res.send("Your API is working");
 });
 
 // Start the Server based on environment

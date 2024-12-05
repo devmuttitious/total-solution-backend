@@ -7,16 +7,22 @@ const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");
 const contactRoutes = require("./routes/contactRoutes");
 const careerRoutes = require("./routes/careerRoutes");
-const fs = require("fs");
-
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : "http://localhost:3000", // Allow frontend domain in production, localhost for development
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+};
+
+app.use(cors(corsOptions));
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Database Connection
@@ -66,6 +72,7 @@ app.get("/*", (req, res) => {
   });
 });
 
+// Serving uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // API Routes
@@ -76,10 +83,16 @@ app.use("/api/career", careerRoutes);
 
 // Root route to show API status
 app.get("/", (req, res) => {
-  res.send("Your API is working");    
+  res.send("Your API is working");
 });
 
-// Start the Server
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+// Start the Server based on environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+} else {
+  app.listen(PORT, () => {
+    console.log(`Server is running at https://tst.com.sa`);
+  });
+}

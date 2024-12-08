@@ -7,10 +7,11 @@ const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");
 const contactRoutes = require("./routes/contactRoutes");
 const careerRoutes = require("./routes/careerRoutes");
+const galleryRoutes = require("./routes/galleryRoutes");
 
 dotenv.config();
-
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 // CORS configuration
@@ -32,11 +33,13 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Middleware
-app.use(express.json());
-
 // Database Connection
 connectDB();
+
+// Middleware
+app.use(express.json());  // for JSON requests
+app.use(express.urlencoded({ extended: true }));  // to parse form data (including text fields)
+
 
 // Social media redirection routes
 app.get('/social/facebook', (req, res) => {
@@ -64,6 +67,7 @@ app.use("/api", subscriberRoutes);
 app.use("/api", mediaRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/career", careerRoutes);
+app.use("/api/gallery", galleryRoutes);
 
 // Custom route to serve HTML files without extension
 app.get("/*", (req, res) => {
@@ -104,3 +108,5 @@ app.listen(PORT, () => {
   const host = env === "production" ? process.env.FRONTEND_URL : `http://localhost:${PORT}`;
   console.log(`Server is running at ${host}`);
 });
+
+

@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const axios = require("axios");
+const bodyParser = require("body-parser");
 const connectDB = require("./config/db");
 const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");
@@ -14,6 +15,12 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT || 3000;
+
+// Replace this with your Google reCAPTCHA Secret Key
+const RECAPTCHA_SECRET_KEY = "6Lf3vZwqAAAAAMUcEnuTtjxSxwsdbOMOIoLQnNuC";
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // CORS configuration
 const corsOptions = {
@@ -98,10 +105,50 @@ app.get("/*", (req, res) => {
 // Serving uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Route to handle form submission
+app.post("/submit", async (req, res) => {
+  const { "g-recaptcha-response": recaptchaResponse, name, email } = req.body;
+
+  // Check if reCAPTCHA response is provided
+  if (!recaptchaResponse) {
+    return res.status(400).send("Please complete the reCAPTCHA.");
+  }
+
+  try {
+    // Verify reCAPTCHA response with Google
+    const googleResponse = await axios.post(
+      "https://www.google.com/recaptcha/api/siteverify",
+      new URLSearchParams({
+        secret: RECAPTCHA_SECRET_KEY,
+        response: recaptchaResponse,
+      })
+    );
+
+    const { success, score } = googleResponse.data;
+
+    // Check if verification was successful
+    if (success) {
+      res.send(`
+          <h1>Form Submitted Successfully!</h1>
+          <p>Name: ${name}</p>
+          <p>Email: ${email}</p>
+          <p>reCAPTCHA Verified ✅</p>
+      `);
+    } else {
+      res.status(400).send("reCAPTCHA verification failed. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error.message);
+    res.status(500).send("Internal server error while verifying reCAPTCHA.");
+  }
+});
+
 // Root route to show API status
 app.get("/", (req, res) => {
   res.send("Your API is working");
 });
+
+
 
 // Start the Server
 app.listen(PORT, () => {

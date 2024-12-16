@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const axios = require('axios');
 const connectDB = require("./config/db");
 const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");
@@ -39,6 +40,9 @@ connectDB();
 // Middleware
 app.use(express.json());  // for JSON requests
 app.use(express.urlencoded({ extended: true }));  // to parse form data (including text fields)
+
+// Secret Key from Google reCAPTCHA
+const RECAPTCHA_SECRET_KEY = '6Lf3vZwqAAAAAMUcEnuTtjxSxwsdbOMOIoLQnNuC';
 
 
 // Social media redirection routes
@@ -100,6 +104,39 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Root route to show API status
 app.get("/", (req, res) => {
   res.send("Your API is working");
+});
+
+/* Google reCAPTCHA */
+// Route to handle form submission
+app.post("/submit", async (req, res) => {
+  const { "g-recaptcha-response": recaptchaResponse, name, email } = req.body;
+
+  if (!recaptchaResponse) {
+      return res.status(400).send("Please complete the reCAPTCHA.");
+  }
+
+  try {
+      // Verify reCAPTCHA response with Google
+      const response = await axios.post(
+          `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`
+      );
+
+      const { success, score } = response.data;
+
+      if (success) {
+          res.send(`
+              <h1>Form Submitted Successfully!</h1>
+              <p>Name: ${name}</p>
+              <p>Email: ${email}</p>
+              <p>reCAPTCHA Verified ✅</p>
+          `);
+      } else {
+          res.status(400).send("reCAPTCHA verification failed. Please try again.");
+      }
+  } catch (error) {
+      console.error("Error verifying reCAPTCHA:", error);
+      res.status(500).send("Internal server error.");
+  }
 });
 
 // Start the Server

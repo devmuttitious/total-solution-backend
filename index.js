@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const axios = require("axios");
 const connectDB = require("./config/db");
 const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");

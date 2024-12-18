@@ -11,21 +11,24 @@ const contactFormController = async (req, res) => {
     }
 
     try {
-        // Verify reCAPTCHA with Google
+        // Verify reCAPTCHA v3 with Google
         const captchaVerificationResponse = await axios.post(
             `https://www.google.com/recaptcha/api/siteverify`,
             null,
             {
                 params: {
                     secret: process.env.RECAPTCHA_SECRET_KEY, // Your reCAPTCHA secret key
-                    response: recaptchaResponse
-                }
+                    response: recaptchaResponse,
+                },
             }
         );
 
-        // Check if reCAPTCHA is valid
-        if (!captchaVerificationResponse.data.success) {
-            return res.status(400).json({ error: 'Failed reCAPTCHA validation. Please try again.' });
+        const { success, score, action } = captchaVerificationResponse.data;
+
+        // reCAPTCHA v3 logic
+        if (!success || score < 0.5 || action !== 'contact_form') {
+            console.error('reCAPTCHA failed:', captchaVerificationResponse.data);
+            return res.status(400).json({ error: 'reCAPTCHA validation failed. Please try again.' });
         }
 
         // Send contact form email
@@ -43,5 +46,5 @@ const contactFormController = async (req, res) => {
 };
 
 module.exports = {
-    contactFormController
+    contactFormController,
 };

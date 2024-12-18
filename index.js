@@ -7,7 +7,7 @@ const subscriberRoutes = require("./routes/subscriberRoutes");
 const mediaRoutes = require("./routes/mediaRoute");
 const contactRoutes = require("./routes/contactRoutes");
 const careerRoutes = require("./routes/careerRoutes");
-const galleryRoutes = require("./routes/galleryRoutes");
+const galleryRoutes = require("./routes/galleryRoutes"); 
 
 dotenv.config();
 const app = express();
